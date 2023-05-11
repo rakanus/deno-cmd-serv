@@ -1,4 +1,4 @@
-let localPort = parse(Deno.args).port > 0 ? parse(Deno.args).port : 9090;
+let localPort =1001;
 
 const server = Deno.listen({ port: localPort });
 console.log("File server running on http://localhost:"+localPort);

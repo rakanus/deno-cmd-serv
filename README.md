@@ -14,10 +14,10 @@
 - Go to your current root project . 💻
 - Run this command 👇
 ```sh
-deno run --allow-net --allow-read https://raw.githubusercontent.com/rakanus/deno-cmd-serv/main/index.ts --port=9090
+deno run --allow-net --allow-read https://raw.githubusercontent.com/rakanus/deno-cmd-serv/main/index.ts 
 
 ```
-- You can change the port with --port ARGS . 🕺
+-  The port will always be 1001. 🕺
 
 
 ### TODO List

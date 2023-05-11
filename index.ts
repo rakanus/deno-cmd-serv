@@ -1,8 +1,36 @@
-import { Application } from "https://deno.land/x/abc/mod.ts";
-import { parse } from "https://deno.land/std/flags/mod.ts";
-const app = new Application();
-
 let localPort = parse(Deno.args).port > 0 ? parse(Deno.args).port : 9090;
 
-app.static("/", ".").file("/", "index.html").start({ port: localPort });
-console.log("[!] Inline Static serving on PORT:" + localPort);
+const server = Deno.listen({ port: localPort });
+console.log("File server running on http://localhost:"+localPort);
+
+for await (const conn of server) {
+  handleHttp(conn).catch(console.error);
+}
+
+async function handleHttp(conn: Deno.Conn) {
+  const httpConn = Deno.serveHttp(conn);
+  for await (const requestEvent of httpConn) {
+    // Use the request pathname as filepath
+    const url = new URL(requestEvent.request.url);
+    const filepath = decodeURIComponent(url.pathname);
+
+    // Try opening the file
+    let file;
+    try {
+      file = await Deno.open("." + filepath, { read: true });
+    } catch {
+      // If the file cannot be opened, return a "404 Not Found" response
+      const notFoundResponse = new Response("404 Not Found", { status: 404 });
+      await requestEvent.respondWith(notFoundResponse);
+      return;
+    }
+
+    // Build a readable stream so the file doesn't have to be fully loaded into
+    // memory while we send it
+    const readableStream = file.readable;
+
+    // Build and send the response
+    const response = new Response(readableStream);
+    await requestEvent.respondWith(response);
+  }
+}
